@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Builds / caches
+.next/
+dist/
+build/
+*.pyc
+.pytest_cache/
+tsconfig.tsbuildinfo
+
+# Runtime state
+*.log
+*.sqlite3
+.env
+.env*.local
+tmp/
+temp/
+
+# OS
+.DS_Store
+Thumbs.db

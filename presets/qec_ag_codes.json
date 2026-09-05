@@ -1,0 +1,48 @@
+{
+  "id": "qec_ag_codes",
+  "name": "Quantum Error Correction from AG Codes",
+  "description": "Construct quantum CSS codes from algebraic curves and simulate performance.",
+  "nodes": [
+    {
+      "id": "curve",
+      "type": "compute",
+      "engine": "sage",
+      "code_template": "C = curves.genus({{genus}}).random({{field}})"
+    },
+    {
+      "id": "code",
+      "type": "compute",
+      "engine": "sage",
+      "code_template": "GoppaCode(C)"
+    },
+    {
+      "id": "simulate",
+      "type": "compute",
+      "engine": "qiskit",
+      "params": { "error_model": "depolarizing", "rate": "{{error_rate}}" }
+    },
+    {
+      "id": "literature",
+      "type": "literature",
+      "source": "scispace",
+      "query": "quantum codes from algebraic curves"
+    },
+    {
+      "id": "consensus",
+      "type": "literature",
+      "source": "consensus",
+      "question": "Are algebraic geometry codes competitive with toric codes?"
+    },
+    {
+      "id": "plot",
+      "type": "visualization",
+      "chart": "error_rate_curve",
+      "data_ref": "simulate.output"
+    }
+  ],
+  "parameters": [
+    { "name": "genus", "type": "integer", "default": 3 },
+    { "name": "field", "type": "integer", "default": 7 },
+    { "name": "error_rate", "type": "float", "default": 0.01 }
+  ]
+}

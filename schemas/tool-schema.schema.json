@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://helixlab.local/schemas/tool-schema.schema.json",
+  "title": "HelixLAB neutral ToolSchema",
+  "description": "The provider-agnostic tool contract. Adapters convert this to provider shapes; provider shapes never cross back.",
+  "type": "object",
+  "required": ["name", "description", "parameters"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "description": { "type": "string", "minLength": 1 },
+    "parameters": { "$ref": "https://json-schema.org/draft/2020-12/schema" }
+  }
+}

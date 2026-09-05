@@ -1,0 +1,27 @@
+{
+  "name": "@helixlab/frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "HelixLAB frontend — React 18 SPA: Lab Builder (React Flow), 3D viewer (React Three Fiber), D3 panels, feedback widget (spec §4.1). Scaffold: deps declared, components land in sprint 1.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@mui/material": "^5.16.8",
+    "@react-three/fiber": "^8.17.10",
+    "d3": "^7.9.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-flow-renderer": "^10.9.4",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.172.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}

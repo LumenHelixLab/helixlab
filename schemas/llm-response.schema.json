@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://helixlab.local/schemas/llm-response.schema.json",
+  "title": "HelixLAB neutral LLMResponse",
+  "description": "Adapter output shape. text optional; tool_calls carry name + arguments object; finish_reason mirrors the provider's.",
+  "type": "object",
+  "required": ["tool_calls", "finish_reason"],
+  "properties": {
+    "text": { "type": ["string", "null"] },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "arguments"],
+        "properties": {
+          "name": { "type": "string" },
+          "arguments": { "type": "object" }
+        }
+      }
+    },
+    "finish_reason": { "type": ["string", "null"] }
+  }
+}

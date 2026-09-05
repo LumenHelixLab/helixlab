@@ -1,0 +1,1 @@
+"""Cross-LLM adapter framework (spec §5). Neutral schemas only cross here."""
