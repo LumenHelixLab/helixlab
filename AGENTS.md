@@ -10,10 +10,14 @@ Local repo scaffolded from `docs/helixlab-spec.md` (authoritative) via the
 |---------|---------|------|
 | api-gateway | `pnpm --dir services/api-gateway install && pnpm --dir services/api-gateway start` | 8080 |
 | orchestrator | `uvicorn services.orchestrator.app.main:app --reload --port 8090` | 8090 |
-| worker-manager | `celery -A services.worker_manager.app.celery_app worker -Q compute -c 2` | — |
-| feedback-hesot | `python -m services.feedback_hesot.app.main` | 8095 |
+| worker_manager | `celery -A services.worker_manager.app.celery_app worker -Q compute -c 2` | — |
+| feedback_hesot | `python -m services.feedback_hesot.app.main` | 8095 |
 | backing services | `docker compose -f dev/docker-compose.yml up -d postgres redis` | 5432/6379 |
 | tests | `python -m pytest tests/ -q` | — |
+
+Prototype-known-limits (documented, not silently accepted): socket.io CORS is
+`*` and rate limiting is global (not per-user) in the gateway — both tighten
+before any deployment.
 
 ## Invariants
 

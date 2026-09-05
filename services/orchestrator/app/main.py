@@ -5,11 +5,11 @@ dispatch nodes via the tool dispatcher, merge results, generate memos.
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 
 from .dag import ExecutionDAG, LabSpecParser, LabSpecValidationError
 from .llm_adapters.factory import LLMAdapterFactory
@@ -46,10 +46,15 @@ def compile_dag(spec: dict[str, Any]) -> dict[str, Any]:
 
 @app.get("/presets")
 def list_presets() -> dict[str, Any]:
+    parser = LabSpecParserSingleton.get()
     presets = []
     for path in sorted(PRESETS_DIR.glob("*.json")):
-        import json
-        presets.append(json.loads(path.read_text(encoding="utf-8")))
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        try:
+            parser.parse(raw)  # presets are validated at load (invariant 5)
+        except LabSpecValidationError as exc:
+            raise HTTPException(status_code=500, detail=f"Invalid preset {path.name}: {exc}") from exc
+        presets.append(raw)
     return {"ok": True, "presets": presets}
 
 
@@ -63,7 +68,8 @@ def generate_prompt(spec: dict[str, Any], provider: str = "anthropic") -> dict[s
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     tools = [_tool_schema_for(node) for node in dag.topological_sort()]
-    adapter = LLMAdapterFactory.get_adapter(provider)
+    if provider not in LLMAdapterFactory._adapters:
+        raise HTTPException(status_code=422, detail=f"Unknown provider: {provider}")
     prompt = _spec_to_prompt(spec)
     return {"ok": True, "provider": provider, "prompt": prompt, "tools": tools}
 

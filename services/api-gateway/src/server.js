@@ -26,13 +26,23 @@ const labSpecValidate = ajv.compile(
 )
 
 // --- Auth (JWT, roles admin|researcher) -------------------------------------
+// Invariant 4/6: never run production with a fallback secret. Development
+// (NODE_ENV !== 'production') may boot without JWT_SECRET but logs loudly.
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be set outside development (invariant 4)')
+}
+if (!process.env.JWT_SECRET) {
+  console.warn('[api-gateway] JWT_SECRET unset — dev fallback in use; NEVER deploy like this')
+}
+const JWT_FALLBACK_SECRET = 'dev-secret'
+
 function requireJwt(req, res, next) {
   const header = req.headers.authorization || ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : null
   if (!token) return res.status(401).json({ error: 'missing token' })
   try {
     const jwt = require('jsonwebtoken')
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret')
+    req.user = jwt.verify(token, process.env.JWT_SECRET || JWT_FALLBACK_SECRET)
     next()
   } catch {
     return res.status(401).json({ error: 'invalid or expired token' })
@@ -56,7 +66,11 @@ app.get('/api/lab/spec/:id', requireJwt, (req, res) => {
   res.json(spec)
 })
 
-app.post('/api/lab/run', requireJwt, async (req, res) => {
+app.post('/api/lab/run', requireJwt, (req, res) => {
+  // The run request carries a Lab Spec (or lab_id + spec) — validate it (invariant 5).
+  if (req.body && !labSpecValidate(req.body)) {
+    return res.status(422).json({ error: 'Lab Spec failed validation', details: labSpecValidate.errors })
+  }
   const runId = `run_${Date.now().toString(36)}`
   // Sprint 1: dispatch to the Orchestrator + Celery; stream via run.update.
   res.status(202).json({ ok: true, run_id: runId, status: 'queued' })

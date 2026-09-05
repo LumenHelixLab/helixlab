@@ -61,7 +61,8 @@ class LabSpecParser:
         except jsonschema.ValidationError as exc:
             raise LabSpecValidationError(f"Lab Spec invalid: {exc.message}") from exc
 
-        # Compile depends_on edges; default: nodes run in declaration order.
+        # Compile depends_on edges. Undeclared nodes are still deterministically
+        # ordered: Kahn's algorithm breaks ties by declaration order (FIFO).
         nodes: list[Node] = []
         for raw in spec_json["nodes"]:
             deps = list(raw.get("depends_on", []))
@@ -73,16 +74,28 @@ class LabSpecParser:
         return ExecutionDAG(nodes)
 
     def substitute_parameters(self, spec_json: dict[str, Any]) -> dict[str, Any]:
-        """Replace {{parameter}} placeholders with typed defaults (invariant 7)."""
+        """Replace {{parameter}} placeholders with typed defaults (invariant 7).
+
+        A string that is exactly one placeholder resolves to the parameter's
+        typed value (so numeric params stay numeric in `params` objects); a
+        placeholder embedded in a longer template is substituted as text.
+        """
         params = {p["name"]: p["default"] for p in spec_json.get("parameters", [])}
+
+        def resolve(name: str) -> Any:
+            if name not in params:
+                raise LabSpecValidationError(f"Unknown parameter: {name}")
+            return params[name]
 
         def walk(value: Any) -> Any:
             if isinstance(value, str):
+                whole = _PARAM_RE.fullmatch(value)
+                if whole:
+                    return resolve(whole.group(1))
+
                 def repl(match: re.Match[str]) -> str:
-                    name = match.group(1)
-                    if name not in params:
-                        raise LabSpecValidationError(f"Unknown parameter: {name}")
-                    return str(params[name])
+                    return str(resolve(match.group(1)))
+
                 return _PARAM_RE.sub(repl, value)
             if isinstance(value, list):
                 return [walk(v) for v in value]
@@ -98,8 +111,12 @@ class ExecutionDAG:
         self.nodes = nodes
 
     def topological_sort(self) -> list[Node]:
-        """Kahn's algorithm; raises on cycles or dangling dependencies."""
+        """Kahn's algorithm (FIFO tie-breaking = declaration order); raises on
+        duplicate ids, dangling dependencies, or cycles."""
         by_id = {n.id: n for n in self.nodes}
+        if len(by_id) != len(self.nodes):
+            dupes = sorted({n.id for n in self.nodes} - set(n.id for n in by_id.values()))
+            raise ValueError(f"Duplicate node id(s): {', '.join(dupes) or 'unknown'}")
         for n in self.nodes:
             for dep in n.depends_on:
                 if dep not in by_id:
@@ -115,7 +132,7 @@ class ExecutionDAG:
         ready = [nid for nid, deg in indegree.items() if deg == 0]
         order: list[Node] = []
         while ready:
-            node_id = ready.pop()
+            node_id = ready.pop(0)  # FIFO → deterministic, declaration-ordered ties
             order.append(by_id[node_id])
             for child in children[node_id]:
                 indegree[child] -= 1

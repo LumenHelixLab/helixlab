@@ -50,8 +50,8 @@ docker compose -f dev/docker-compose.yml up -d postgres redis
 |------|------|
 | `services/api-gateway/` | Express REST + WebSocket, JWT, rate limits |
 | `services/orchestrator/` | FastAPI: DAG compile, tool dispatch, report merge |
-| `services/worker-manager/` | Celery tasks: `run_wolfram/gap/sage/qiskit` |
-| `services/feedback-hesot/` | APScheduler feedback loop (human-gated) |
+| `services/worker_manager/` | Celery tasks: `run_wolfram/gap/sage/qiskit` |
+| `services/feedback_hesot/` | APScheduler feedback loop (human-gated) |
 | `frontend/` | React 18 SPA (React Flow, R3F, MUI) — scaffold |
 | `schemas/` | Neutral contracts: Lab Spec, ToolSchema, LLMResponse |
 | `presets/` | Ready-to-run Lab Specs (`{{parameter}}` substitution) |

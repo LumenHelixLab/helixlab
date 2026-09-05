@@ -5,7 +5,6 @@ app/llm_adapters may import a provider SDK.
 """
 from __future__ import annotations
 
-import json
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -23,10 +22,3 @@ class LLMAdapter(ABC):
     @abstractmethod
     def convert_tool_schema(self, neutral_tool: dict[str, Any]) -> dict[str, Any]:
         """Convert neutral tool schema to provider format."""
-
-    @staticmethod
-    def _decode_arguments(raw_arguments: Any) -> dict[str, Any]:
-        """OpenAI-family providers hand back a JSON string; normalize."""
-        if isinstance(raw_arguments, str):
-            return json.loads(raw_arguments or "{}")
-        return dict(raw_arguments or {})

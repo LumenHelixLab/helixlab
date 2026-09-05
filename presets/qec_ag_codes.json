@@ -13,7 +13,8 @@
       "id": "code",
       "type": "compute",
       "engine": "sage",
-      "code_template": "GoppaCode(C)"
+      "code_template": "GoppaCode(C)",
+      "depends_on": ["curve"]
     },
     {
       "id": "simulate",
