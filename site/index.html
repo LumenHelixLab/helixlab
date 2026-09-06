@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>HelixLAB — Provider-Agnostic Research Laboratory</title>
 <meta name="description" content="HelixLAB: math engines, literature synthesis, and cross-LLM orchestration in one verified research lab. Full documentation, presets, and assistance.">
 <meta property="og:title" content="HelixLAB — Run your research like infrastructure">
@@ -11,9 +12,23 @@
 <style>
   :root {
     --bg: #04070F; --panel: #0B1220; --panel2: #0B1626; --line: #1E293B;
-    --text: #E2E8F0; --muted: #94A3B8; --dim: #64748B;
+    --text: #E2E8F0; --muted: #94A3B8; --dim: #94A3B8; --faint: #64748B;
     --cyan: #00E5FF; --cyan-dim: rgba(0,229,255,.35); --green: #00FF00; --blue: #3B82F6; --purple: #8B5CF6;
   }
+  @media (prefers-color-scheme: dark) { :root { color-scheme: dark; } }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .skip {
+    position: absolute; left: -9999px; top: 0; z-index: 100;
+    background: var(--panel2); color: var(--cyan); padding: 10px 16px; border-radius: 0 0 6px 0;
+  }
+  .skip:focus { left: 0; }
+  a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 2px; }
+  section, [id] { scroll-margin-top: 72px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  @media (prefers-reduced-motion: reduce) { .cursor::after { animation: none; } html { scroll-behavior: auto; } }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
@@ -67,7 +82,7 @@
     font-weight: 600; border: 1px solid transparent; cursor: pointer;
   }
   .btn:hover { text-decoration: none; }
-  .btn-primary { background: linear-gradient(90deg, #3B82F6, #8B5CF6); color: #fff; }
+  .btn-primary { background: linear-gradient(90deg, #2563EB, #7C3AED); color: #fff; }
   .btn-primary:hover { filter: brightness(1.1); }
   .btn-ghost { border-color: rgba(0,229,255,.5); color: var(--cyan); background: transparent; }
   .btn-ghost:hover { background: rgba(0,229,255,.08); }
@@ -122,6 +137,10 @@
     padding: 16px 18px; overflow-x: auto; font-size: 13px; line-height: 1.7; color: #D1D5DB;
   }
   .scroll { overflow-x: auto; }
+  .scroll:focus-visible, pre.block:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  @media (max-width: 640px) {
+    nav .wrap { flex-wrap: wrap; height: auto; padding: 10px 16px; row-gap: 8px; }
+  }
   ul.check { list-style: none; padding: 0; }
   ul.check li { padding-left: 24px; position: relative; margin: 8px 0; color: var(--text); }
   ul.check li::before { content: "▸"; position: absolute; left: 4px; color: var(--cyan); }
@@ -132,12 +151,12 @@
 
   footer { border-top: 1px solid var(--line); padding: 40px 0 60px; color: var(--dim); font-size: 13px; }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
-  @media (max-width: 640px) { nav .item { display: none; } }
 </style>
 </head>
 <body>
+<a class="skip" href="#why">Skip to content</a>
 
-<nav>
+<nav aria-label="Primary">
   <div class="wrap">
     <span class="brand">HELIX<span class="hex">LAB</span></span>
     <a class="item" href="#architecture">Architecture</a>
@@ -164,8 +183,8 @@
       <a class="btn btn-ghost" href="#docs">Read the docs</a>
       <a class="btn btn-ghost" href="https://github.com/LumenHelixLab/helixlab">GitHub ↗</a>
     </div>
-    <div class="terminal" role="img" aria-label="Terminal showing a HelixLAB run">
-      <div class="tbar">
+    <div class="terminal">
+      <div class="tbar" aria-hidden="true">
         <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
         <span class="title mono">researcher@helixlab:~/lab</span>
       </div>
@@ -182,6 +201,7 @@
   </div>
 </header>
 
+<main>
 <section id="why">
   <div class="wrap">
     <h2>Why HelixLAB</h2>
@@ -201,7 +221,8 @@
   <div class="wrap">
     <h2>Architecture</h2>
     <p class="sub">Four small services over two backing stores. Every arrow is a versioned contract.</p>
-    <pre class="block mono">frontend (React SPA · React Flow lab builder · Three.js viewer · feedback widget)
+    <p class="sr-only">The frontend talks REST and WebSocket to an Express API gateway, which dispatches to a FastAPI orchestrator. The orchestrator compiles Lab Specs into a DAG and drives Celery workers running sandboxed math engines, plus a HESOT feedback service. Adapters cover Wolfram, GAP, SageMath, and Qiskit; SciSpace, Consensus, and Semantic Scholar; and OpenAI, Anthropic, Gemini, Kimi, and Llama.</p>
+    <pre class="block mono" aria-hidden="true" tabindex="0">frontend (React SPA · React Flow lab builder · Three.js viewer · feedback widget)
    │  REST + WebSocket
 api-gateway (Express · JWT auth · rate limits · JSON-Schema validation)
    │
@@ -237,9 +258,11 @@ adapters: Wolfram · GAP · SageMath · Qiskit │ SciSpace · Consensus · Sema
     </ul>
 
     <h3>API reference — API Gateway</h3>
-    <div class="scroll">
+    <div class="scroll" tabindex="0" role="region" aria-label="API Gateway endpoint table">
     <table>
-      <tr><th>Method</th><th>Path</th><th>Purpose</th></tr>
+      <caption class="sr-only">API Gateway endpoints</caption>
+      <thead><tr><th scope="col">Method</th><th scope="col">Path</th><th scope="col">Purpose</th></tr></thead>
+      <tbody>
       <tr><td><code>POST</code></td><td><code>/api/lab/spec</code></td><td>Validate + store a Lab Spec → <code>lab_id</code></td></tr>
       <tr><td><code>GET</code></td><td><code>/api/lab/spec/:id</code></td><td>Retrieve a Lab Spec</td></tr>
       <tr><td><code>POST</code></td><td><code>/api/lab/run</code></td><td>Execute a Lab Spec → <code>run_id</code></td></tr>
@@ -247,26 +270,30 @@ adapters: Wolfram · GAP · SageMath · Qiskit │ SciSpace · Consensus · Sema
       <tr><td><code>POST</code></td><td><code>/api/feedback</code></td><td>Submit feedback on a result (feeds HESOT)</td></tr>
       <tr><td><code>GET</code></td><td><code>/api/presets</code></td><td>List available presets</td></tr>
       <tr><td><code>POST</code></td><td><code>/api/prompt/generate</code></td><td>Lab Spec → provider-routed LLM prompt + tools</td></tr>
+      </tbody>
     </table>
     </div>
     <p style="font-size:14px;color:var(--dim)">WebSocket events: <code>run.update</code> (progress, logs, partials) · <code>run.complete</code> (output + citations) · <code>run.error</code>. Auth: JWT, roles <code>admin</code>/<code>researcher</code>.</p>
 
     <h3>Cross-LLM adapter recipe</h3>
     <p style="color:var(--muted);font-size:15px">One adapter per provider, three methods each: <code>generate</code>, <code>parse_response</code> (→ neutral <code>LLMResponse</code>), <code>convert_tool_schema</code> (neutral → provider shape).</p>
-    <div class="scroll">
+    <div class="scroll" tabindex="0" role="region" aria-label="Cross-LLM provider adapter table">
     <table>
-      <tr><th>Provider</th><th>Tool schema shape</th><th>Parse notes</th></tr>
+      <caption class="sr-only">LLM provider adapter shapes and parse notes</caption>
+      <thead><tr><th scope="col">Provider</th><th scope="col">Tool schema shape</th><th scope="col">Parse notes</th></tr></thead>
+      <tbody>
       <tr><td>OpenAI</td><td><code>{"type":"function","function":{…}}</code></td><td><code>choices[0].message.tool_calls[]</code>, JSON-decoded arguments</td></tr>
       <tr><td>Anthropic</td><td><code>{name, description, input_schema}</code></td><td><code>content[]</code> blocks: <code>text</code> / <code>tool_use</code>; <code>stop_reason</code></td></tr>
       <tr><td>Gemini</td><td><code>{"function_declarations":[…]}</code></td><td>SDK-version-dependent (adapter lands in sprint 1)</td></tr>
       <tr><td>Moonshot Kimi</td><td>OpenAI-compatible</td><td><code>base_url=api.moonshot.cn/v1</code>, model <code>moonshot-v1-8k</code></td></tr>
       <tr><td>Llama 3</td><td>OpenAI-compatible</td><td><code>base_url=api.together.xyz/v1</code>, model <code>meta-llama/Llama-3-70b-chat-hf</code></td></tr>
+      </tbody>
     </table>
     </div>
 
     <h3>Preset format</h3>
     <p style="color:var(--muted);font-size:15px">Presets are JSON files with typed, defaulted parameters. The orchestrator substitutes <code>{{parameter}}</code> placeholders before execution — a run reproduces from (preset, parameters) alone.</p>
-    <pre class="block mono">{
+    <pre class="block mono" tabindex="0" role="region" aria-label="Preset JSON example">{
   "id": "qec_ag_codes",
   "name": "Quantum Error Correction from AG Codes",
   "nodes": [
@@ -298,7 +325,7 @@ adapters: Wolfram · GAP · SageMath · Qiskit │ SciSpace · Consensus · Sema
       <div class="stat"><div class="n">&lt;50 ms</div><div class="l">cache hit (Redis)</div></div>
     </div>
 
-    <h3>Assistance — three ways to get help</h3>
+    <h3 id="assist">Assistance — three ways to get help</h3>
     <div class="grid g3">
       <div class="card"><h4>Agents: use the skill</h4><p>Any LLM agent can work on HelixLAB natively via the <code>helixlab</code> skill (installed for Claude, Codex, and Grok). It carries the contracts, invariants, and workflows — ask your agent to "load helixlab".</p></div>
       <div class="card"><h4>Repo-first support</h4><p><code>AGENTS.md</code> documents every command and layout rule; <code>docs/helixlab-spec.md</code> is the authoritative spec; <code>docs/REPO-SPEC.md</code> records build decisions and open questions.</p></div>
@@ -311,7 +338,7 @@ adapters: Wolfram · GAP · SageMath · Qiskit │ SciSpace · Consensus · Sema
   <div class="wrap">
     <h2>Quickstart</h2>
     <p class="sub">From clone to a running lab in four commands. Backing services are Postgres + Redis; everything else is service-local.</p>
-    <pre class="block mono"><span class="dim"># clone + backend services</span>
+    <pre class="block mono" tabindex="0" role="region" aria-label="Quickstart commands"><span class="dim"># clone + backend services</span>
 git clone https://github.com/LumenHelixLab/helixlab && cd helixlab
 cp .env.example .env          <span class="dim"># add your provider keys (never commit .env)</span>
 docker compose -f dev/docker-compose.yml up -d postgres redis
@@ -336,6 +363,7 @@ curl http://127.0.0.1:8080/api/health</pre>
     </div>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap">
